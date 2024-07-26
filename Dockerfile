@@ -3,6 +3,6 @@ COPY . .
 RUN mvn clean package -DskipTests
 
 FROM openjdk:17-jdk-slim
-COPY target/Weather-app-0.0.1-SNAPSHOT.jar /app/Weather-app.jar
+COPY C:/Users/Carla/OneDrive/Desktop/Weather-App/target/Weather-app-0.0.1-SNAPSHOT.jar /app/Weather-app.jar
 EXPOSE 8080
 ENTRYPOINT [ "java","-jar","demo.jar" ]
