@@ -1,8 +1,8 @@
 
-﻿## Weather-App
+Weather-App
 
 
-## 📋 <a name="table">Table of Contents</a>
+📋 Table of Contents
 
 1. 🤖 [Introduction](#introduction)
 2. ⚙️ [Tech Stack](#tech-stack)
@@ -10,14 +10,14 @@
 4. 🤸 [Quick Start](#quick-start)
 
 
-## <a name="introduction">🤖 Introduction</a>
+🤖 Introduction
 
 Welcome to the Weather App! This dynamic web application is built with Spring Boot and fetches real-time weather data using a third-party API. The app enables users to search for current weather conditions 
 in any city and view detailed information such as temperature, humidity, and weather descriptions. 
 Designed for both usability and learning, this project demonstrates how to integrate REST APIs, process JSON data, and create interactive web interfaces with Java and Spring Boot.
 
 
-## <a name="tech-stack">⚙️ Tech Stack</a>
+⚙️ Tech Stack
 
 - Spring Boot – Provides the core backend framework for rapid application development and RESTful service integration
 
@@ -34,7 +34,7 @@ Designed for both usability and learning, this project demonstrates how to integ
 - Lombok – Reduces boilerplate code in Java models
 
 
-## <a name="features">🔋 Features</a>
+🔋 Features
 
 👉 **City Search**: Enter any city name to instantly retrieve and display current weather conditions
 
@@ -47,19 +47,17 @@ Designed for both usability and learning, this project demonstrates how to integ
 👉 **Error Handling**: User-friendly messages for invalid city names or network issues
 
 
-## <a name="quick-start">🤸 Quick Start</a>
+🤸 Quick Start
 
 Ready to run the app locally or explore the code? Here’s how you can get started:
 
-**Prerequisites**
+*Prerequisites:
+   - Java JDK (11 or later)
+   - Maven or Gradle
+   - Git
+   - OpenWeatherMap API key (sign up at openweathermap.org)
 
-- Java JDK (11 or later)
-- Maven or Gradle
-- Git
-- OpenWeatherMap API key (sign up at openweathermap.org)
-
-**Installation**
-
+*Installation:
 - Clone the repository: 
    git clone <repository-url>
 
@@ -69,7 +67,7 @@ Ready to run the app locally or explore the code? Here’s how you can get start
 - Install dependencies and build the project:
     mvn clean install
 
-**Running the Project**
+*Running the Project:
    mvn spring-boot:run
 
 Open [http://localhost:8080]in your browser to view the app.
