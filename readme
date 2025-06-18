@@ -61,16 +61,16 @@ Ready to run the app locally or explore the code? Here’s how you can get start
 **Installation**
 
 - Clone the repository: 
-   -- git clone <repository-url>
+   git clone <repository-url>
 
 - Configure your API key: Add your OpenWeatherMap API key to application.properties
-   -- weather.api.key=YOUR_API_KEY
+   weather.api.key=YOUR_API_KEY
 
 - Install dependencies and build the project:
-    <p>mvn clean install</p>
+    mvn clean install
 
 **Running the Project**
-  <p>mvn spring-boot:run</p>
+   mvn spring-boot:run
 
 Open [http://localhost:8080]in your browser to view the app.
 
