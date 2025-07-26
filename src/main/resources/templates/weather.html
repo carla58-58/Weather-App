@@ -10,6 +10,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/weather-icons/2.0.10/css/weather-icons.min.css">
     <!-- Font Awesome for date/time icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <!-- Chart.js for line charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" type="text/css" href="/css/weather.css">
 </head>
 <body>
@@ -43,49 +45,205 @@
                     
                     <!-- Forecast Section -->
                     <div th:if="${forecast != null and !forecast.empty}" class="forecast-section mt-4">
-                        <h3 class="forecast-title">7-Day Weather Forecast</h3>
+                        <h3 class="forecast-title">7-Day Weather Trends</h3>
                         
-                        <!-- Weather Chart -->
-                        <div class="weather-chart">
-                            <div class="chart-container">
-                                <div class="temperature-scale">
-                                    <div class="scale-line" th:each="temp : ${#numbers.sequence(35, 0, -5)}">
-                                        <span class="scale-label" th:text="${temp} + '°'">30°</span>
-                                    </div>
-                                </div>
-                                
-                                <div class="chart-bars">
-                                    <div th:each="day : ${forecast}" class="day-column">
-                                        <div class="temperature-bar-container">
-                                            <div class="temperature-bar" 
-                                                 th:style="'height: ' + ${day.temperature * 3} + 'px; background: linear-gradient(to top, #ff6b6b, #4ecdc4);'">
-                                                <span class="temp-label" th:text="${day.temperature} + '°C'">20°C</span>
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="day-info">
-                                            <div class="day-name" th:text="${day.dayName}">Mon</div>
-                                            <div class="day-date" th:text="${day.date}">Jan 15</div>
-                                            <div class="weather-icon-small">
-                                                <span th:classappend="${day.weatherIcon}"></span>
-                                            </div>
-                                            <div class="weather-desc" th:text="${day.description}">Sunny</div>
-                                        </div>
-                                    </div>
-                                </div>
+                        <!-- Weather Line Charts -->
+                        <div class="weather-charts">
+                            <!-- Temperature Chart -->
+                            <div class="chart-container mb-4">
+                                <h5 class="chart-title">Temperature (°C)</h5>
+                                <canvas id="temperatureChart" width="400" height="200"></canvas>
                             </div>
                             
-                            <!-- Additional weather details -->
-                            <div class="weather-details-grid mt-3">
-                                <div th:each="day : ${forecast}" class="day-details">
-                                    <h6 th:text="${day.dayName}">Monday</h6>
-                                    <div class="detail-row">
-                                        <small><i class="fas fa-tint"></i> <span th:text="${day.humidity}">65</span>%</small>
-                                        <small><i class="fas fa-wind"></i> <span th:text="${day.windSpeed}">3.2</span> m/s</small>
+                            <!-- Humidity Chart -->
+                            <div class="chart-container mb-4">
+                                <h5 class="chart-title">Humidity (%)</h5>
+                                <canvas id="humidityChart" width="400" height="200"></canvas>
+                            </div>
+                            
+                            <!-- Wind Speed Chart -->
+                            <div class="chart-container mb-4">
+                                <h5 class="chart-title">Wind Speed (m/s)</h5>
+                                <canvas id="windChart" width="400" height="200"></canvas>
+                            </div>
+                            
+                            <!-- Daily Weather Summary -->
+                            <div class="daily-summary">
+                                <h5 class="chart-title">Daily Weather Summary</h5>
+                                <div class="summary-grid">
+                                    <div th:each="day : ${forecast}" class="day-summary">
+                                        <div class="day-header">
+                                            <strong th:text="${day.dayName}">Mon</strong>
+                                            <small th:text="${day.date}">Jan 15</small>
+                                        </div>
+                                        <div class="weather-icon-summary">
+                                            <span th:classappend="${day.weatherIcon}"></span>
+                                        </div>
+                                        <div class="weather-desc-summary" th:text="${day.description}">Sunny</div>
                                     </div>
                                 </div>
                             </div>
                         </div>
+                        
+                        <!-- Chart Data Script -->
+                        <script th:inline="javascript">
+                            document.addEventListener('DOMContentLoaded', function() {
+                                // Extract data from Thymeleaf
+                                const forecastData = /*[[${forecast}]]*/ [];
+                                
+                                const labels = [];
+                                const temperatures = [];
+                                const humidity = [];
+                                const windSpeed = [];
+                                
+                                forecastData.forEach(day => {
+                                    labels.push(day.dayName + '\n' + day.date);
+                                    temperatures.push(day.temperature);
+                                    humidity.push(day.humidity);
+                                    windSpeed.push(day.windSpeed);
+                                });
+                                
+                                // Common chart options
+                                const commonOptions = {
+                                    responsive: true,
+                                    maintainAspectRatio: false,
+                                    plugins: {
+                                        legend: {
+                                            display: false
+                                        }
+                                    },
+                                    scales: {
+                                        x: {
+                                            ticks: {
+                                                color: '#f8f9fa',
+                                                font: {
+                                                    size: 11
+                                                }
+                                            },
+                                            grid: {
+                                                color: 'rgba(255, 255, 255, 0.1)'
+                                            }
+                                        },
+                                        y: {
+                                            ticks: {
+                                                color: '#f8f9fa',
+                                                font: {
+                                                    size: 11
+                                                }
+                                            },
+                                            grid: {
+                                                color: 'rgba(255, 255, 255, 0.1)'
+                                            }
+                                        }
+                                    }
+                                };
+                                
+                                // Temperature Chart
+                                new Chart(document.getElementById('temperatureChart'), {
+                                    type: 'line',
+                                    data: {
+                                        labels: labels,
+                                        datasets: [{
+                                            data: temperatures,
+                                            borderColor: '#ff6b6b',
+                                            backgroundColor: 'rgba(255, 107, 107, 0.1)',
+                                            borderWidth: 3,
+                                            fill: true,
+                                            tension: 0.4,
+                                            pointBackgroundColor: '#ff6b6b',
+                                            pointBorderColor: '#fff',
+                                            pointBorderWidth: 2,
+                                            pointRadius: 5
+                                        }]
+                                    },
+                                    options: {
+                                        ...commonOptions,
+                                        scales: {
+                                            ...commonOptions.scales,
+                                            y: {
+                                                ...commonOptions.scales.y,
+                                                title: {
+                                                    display: true,
+                                                    text: 'Temperature (°C)',
+                                                    color: '#f8f9fa'
+                                                }
+                                            }
+                                        }
+                                    }
+                                });
+                                
+                                // Humidity Chart
+                                new Chart(document.getElementById('humidityChart'), {
+                                    type: 'line',
+                                    data: {
+                                        labels: labels,
+                                        datasets: [{
+                                            data: humidity,
+                                            borderColor: '#4ecdc4',
+                                            backgroundColor: 'rgba(78, 205, 196, 0.1)',
+                                            borderWidth: 3,
+                                            fill: true,
+                                            tension: 0.4,
+                                            pointBackgroundColor: '#4ecdc4',
+                                            pointBorderColor: '#fff',
+                                            pointBorderWidth: 2,
+                                            pointRadius: 5
+                                        }]
+                                    },
+                                    options: {
+                                        ...commonOptions,
+                                        scales: {
+                                            ...commonOptions.scales,
+                                            y: {
+                                                ...commonOptions.scales.y,
+                                                title: {
+                                                    display: true,
+                                                    text: 'Humidity (%)',
+                                                    color: '#f8f9fa'
+                                                },
+                                                min: 0,
+                                                max: 100
+                                            }
+                                        }
+                                    }
+                                });
+                                
+                                // Wind Speed Chart
+                                new Chart(document.getElementById('windChart'), {
+                                    type: 'line',
+                                    data: {
+                                        labels: labels,
+                                        datasets: [{
+                                            data: windSpeed,
+                                            borderColor: '#ffc107',
+                                            backgroundColor: 'rgba(255, 193, 7, 0.1)',
+                                            borderWidth: 3,
+                                            fill: true,
+                                            tension: 0.4,
+                                            pointBackgroundColor: '#ffc107',
+                                            pointBorderColor: '#fff',
+                                            pointBorderWidth: 2,
+                                            pointRadius: 5
+                                        }]
+                                    },
+                                    options: {
+                                        ...commonOptions,
+                                        scales: {
+                                            ...commonOptions.scales,
+                                            y: {
+                                                ...commonOptions.scales.y,
+                                                title: {
+                                                    display: true,
+                                                    text: 'Wind Speed (m/s)',
+                                                    color: '#f8f9fa'
+                                                },
+                                                min: 0
+                                            }
+                                        }
+                                    }
+                                });
+                            });
+                        </script>
                     </div>
                     
                     <a href="/" class="btn btn-secondary btn-block">Back</a>
