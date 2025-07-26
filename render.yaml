@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: weather-app
+    env: java
+    buildCommand: ./mvnw clean package -DskipTests
+    startCommand: java -jar target/*.jar
+    envVars:
+      - key: API_KEY
+        value: 53b926326d8ecaa9d124d8bbe615f210
+      - key: PORT
+        value: 10000
