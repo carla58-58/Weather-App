@@ -27,8 +27,10 @@
                 <div class="card-body">
                     <h1 class="card-title text-center">Weather App</h1>
                     <form action="/weather" method="get">
-                        <div class="form-group">
-                            <input type="text" class="form-control" name="city" placeholder="Enter city name" required>
+                        <div class="form-group position-relative">
+                            <input type="text" class="form-control" id="cityInput" name="city" placeholder="Enter city name" required autocomplete="off">
+                            <input type="hidden" id="selectedCity" name="selectedCity">
+                            <div id="cityDropdown" class="dropdown-menu city-dropdown"></div>
                         </div>
                         <button type="submit" class="btn btn-primary btn-block">Get Weather</button>
                     </form>
@@ -42,5 +44,6 @@
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script src="/js/autocomplete.js"></script>
 </body>
 </html>

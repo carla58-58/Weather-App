@@ -284,3 +284,61 @@ body {
     position: relative;
     z-index: 10;
 }
+
+/* Autocomplete dropdown styles */
+.city-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid #ccc;
+    border-radius: 0 0 5px 5px;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 1000;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    display: none;
+}
+
+.city-dropdown .dropdown-item {
+    padding: 10px 15px;
+    cursor: pointer;
+    color: #333;
+    border-bottom: 1px solid #eee;
+    transition: background-color 0.2s;
+}
+
+.city-dropdown .dropdown-item:last-child {
+    border-bottom: none;
+}
+
+.city-dropdown .dropdown-item:hover,
+.city-dropdown .dropdown-item.active {
+    background-color: rgba(0, 123, 255, 0.1);
+    color: #007bff;
+}
+
+.city-dropdown .dropdown-item.loading {
+    text-align: center;
+    font-style: italic;
+    color: #666;
+    cursor: default;
+}
+
+/* Position relative for dropdown container */
+.position-relative {
+    position: relative;
+}
+
+/* Responsive adjustments for dropdown */
+@media (max-width: 768px) {
+    .city-dropdown {
+        max-height: 150px;
+        font-size: 14px;
+    }
+    
+    .city-dropdown .dropdown-item {
+        padding: 8px 12px;
+    }
+}
