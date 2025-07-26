@@ -360,33 +360,35 @@ body {
 .weather-charts {
     background: rgba(255, 255, 255, 0.1);
     border-radius: 15px;
-    padding: 30px;
+    padding: 25px;
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.2);
-    margin: 20px 0;
+    margin: 20px auto;
+    max-width: 900px; /* Limit maximum width for better readability */
+    width: 95%; /* Use most of available width */
 }
 
 .chart-container {
     background: rgba(255, 255, 255, 0.05);
     border-radius: 10px;
-    padding: 25px;
+    padding: 20px;
     margin-bottom: 20px;
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .chart-title {
     color: #f8f9fa;
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 600;
     text-align: center;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 /* Desktop/Web Browser - Much bigger chart */
 .chart-container canvas {
-    max-height: 500px !important;
-    height: 500px !important;
+    max-height: 400px !important;
+    height: 400px !important;
     width: 100% !important;
 }
 
@@ -407,16 +409,24 @@ body {
     }
     
     .chart-container canvas {
-        max-height: 600px !important;
-        height: 600px !important;
+        max-height: 450px !important;
+        height: 450px !important;
     }
 }
 
 /* Medium screens (tablets) */
 @media (min-width: 769px) and (max-width: 1199px) {
     .chart-container canvas {
-        max-height: 400px !important;
-        height: 400px !important;
+        max-height: 350px !important;
+        height: 350px !important;
+    }
+}
+
+/* Standard desktop (992px - 1199px) */
+@media (min-width: 992px) and (max-width: 1199px) {
+    .chart-container canvas {
+        max-height: 380px !important;
+        height: 380px !important;
     }
 }
 
@@ -483,17 +493,19 @@ body {
 /* Responsive adjustments for charts */
 @media (max-width: 768px) {
     .forecast-title {
-        font-size: 18px;
+        font-size: 16px;
         margin-bottom: 15px;
     }
     
     .weather-charts {
         padding: 15px;
-        margin: 10px 0;
+        margin: 10px auto;
+        width: 98%;
+        max-width: none;
     }
     
     .chart-container {
-        padding: 12px;
+        padding: 15px;
         margin-bottom: 15px;
     }
     
@@ -502,10 +514,10 @@ body {
         margin-bottom: 10px;
     }
     
-    /* Mobile - Smaller chart for better mobile experience */
+    /* Mobile - Appropriate chart size for mobile viewing */
     .chart-container canvas {
-        max-height: 250px !important;
-        height: 250px !important;
+        max-height: 280px !important;
+        height: 280px !important;
     }
     
     .summary-grid {
@@ -538,21 +550,21 @@ body {
 /* Extra small mobile devices */
 @media (max-width: 480px) {
     .weather-charts {
-        padding: 10px;
-        margin: 5px 0;
+        padding: 12px;
+        margin: 8px auto;
     }
     
     .chart-container {
-        padding: 8px;
+        padding: 10px;
     }
     
     .chart-title {
         font-size: 13px;
     }
     
-    /* Very small screens - compact chart */
+    /* Very small screens - compact but readable chart */
     .chart-container canvas {
-        max-height: 200px !important;
-        height: 200px !important;
+        max-height: 240px !important;
+        height: 240px !important;
     }
 }
