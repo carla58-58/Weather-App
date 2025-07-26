@@ -10,11 +10,12 @@ body {
     margin: 0;
     padding: 0;
 }
-.container {
+.container-fluid {
     position: relative;
     z-index: 10;
-    padding-top: 0;
-    margin-top: 0;
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
     height: 100vh;
 }
 
@@ -40,11 +41,13 @@ body {
         overflow-y: auto;
     }
     
-    .container {
-        padding: 0;
+    .container-fluid {
+        padding: 10px;
         margin: 0;
         width: 100%;
         max-width: 100%;
+        height: auto;
+        min-height: 100vh;
     }
     
     .row {
@@ -63,8 +66,8 @@ body {
         max-height: 25vh !important;
         margin: 0 auto;
         border-radius: 15px;
-        width: 85% !important;
-        max-width: 320px !important;
+        width: 95% !important;
+        max-width: 500px !important;
         box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
     }
     

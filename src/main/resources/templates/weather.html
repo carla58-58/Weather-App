@@ -13,6 +13,91 @@
     <!-- Chart.js for line charts -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" type="text/css" href="/css/weather.css">
+    <style>
+        /* Custom legend text colors to match chart lines */
+        canvas + div span:nth-child(1),
+        .chartjs-legend ul li:nth-child(1) span,
+        #combinedChart + .legend-container .legend-item:nth-child(1) {
+            color: #ff6b6b !important; /* Temperature - Red */
+        }
+        
+        canvas + div span:nth-child(2),
+        .chartjs-legend ul li:nth-child(2) span,
+        #combinedChart + .legend-container .legend-item:nth-child(2) {
+            color: #4ecdc4 !important; /* Humidity - Green/Teal */
+        }
+        
+        canvas + div span:nth-child(3),
+        .chartjs-legend ul li:nth-child(3) span,
+        #combinedChart + .legend-container .legend-item:nth-child(3) {
+            color: #ffc107 !important; /* Wind Speed - Yellow */
+        }
+        
+        /* More specific selectors for Chart.js legend */
+        .chart-container .chartjs-legend-item:nth-child(1),
+        .chart-container .legend-labels li:nth-child(1) {
+            color: #ff6b6b !important;
+        }
+        
+        .chart-container .chartjs-legend-item:nth-child(2),
+        .chart-container .legend-labels li:nth-child(2) {
+            color: #4ecdc4 !important;
+        }
+        
+        .chart-container .chartjs-legend-item:nth-child(3),
+        .chart-container .legend-labels li:nth-child(3) {
+            color: #ffc107 !important;
+        }
+        
+        /* Mobile-specific chart optimizations */
+        @media (max-width: 768px) {
+            .chart-container {
+                margin-bottom: 2rem !important;
+            }
+            
+            .custom-legend {
+                flex-direction: column !important;
+                align-items: center !important;
+                gap: 8px !important;
+            }
+            
+            .legend-item {
+                font-size: 12px !important;
+                margin: 0 5px !important;
+                display: block !important;
+                text-align: center !important;
+            }
+            
+            #combinedChart {
+                max-height: 300px !important;
+            }
+            
+            .chart-title {
+                font-size: 1rem !important;
+                margin-bottom: 1rem !important;
+            }
+            
+            .forecast-title {
+                font-size: 1.3rem !important;
+                margin-bottom: 1.5rem !important;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .custom-legend {
+                margin-bottom: 1rem !important;
+            }
+            
+            .legend-item {
+                font-size: 11px !important;
+                margin: 2px 0 !important;
+            }
+            
+            #combinedChart {
+                max-height: 250px !important;
+            }
+        }
+    </style>
 </head>
 <body>
 <!-- Animated Clouds Background -->
@@ -26,7 +111,7 @@
 
 <div class="container-fluid">
     <div class="row justify-content-center">
-        <div class="col-12 col-sm-11 col-md-10 col-lg-8 col-xl-7">
+        <div class="col-12 col-sm-11 col-md-11 col-lg-10 col-xl-9">
             <div class="card">
                 <div class="card-body text-center">
                     <h1 class="card-title">Weather in <span th:text="${city}">City</span>, <span th:text="${country}">Country</span></h1>
@@ -39,9 +124,9 @@
                     
                     <span th:classappend="${weatherIcon} + ' weather-icon'"></span>
                     <p class="card-text"><strong>Description:</strong> <span th:text="${weatherDescription}">Description</span></p>
-                    <p class="card-text"><strong>Temperature:</strong> <span th:text="${temperature}">Temperature</span>°C</p>
-                    <p class="card-text"><strong>Humidity:</strong> <span th:text="${humidity}">Humidity</span>%</p>
-                    <p class="card-text"><strong>Wind Speed:</strong> <span th:text="${windSpeed}">Wind Speed</span> m/s</p>
+                    <p class="card-text"><strong style="color: #ff6b6b;">Temperature:</strong> <span th:text="${temperature}" style="color: #ff6b6b; font-weight: bold;">Temperature</span>°C</p>
+                    <p class="card-text"><strong style="color: #4ecdc4;">Humidity:</strong> <span th:text="${humidity}" style="color: #4ecdc4; font-weight: bold;">Humidity</span>%</p>
+                    <p class="card-text"><strong style="color: #ffc107;">Wind Speed:</strong> <span th:text="${windSpeed}" style="color: #ffc107; font-weight: bold;">Wind Speed</span> m/s</p>
                     
                     <!-- Forecast Section -->
                     <div th:if="${forecast != null and !forecast.empty}" class="forecast-section mt-4">
@@ -52,6 +137,20 @@
                             <!-- Combined Chart -->
                             <div class="chart-container mb-4">
                                 <h5 class="chart-title">Weather Trends - Click legend to toggle data</h5>
+                                
+                                <!-- Custom Legend -->
+                                <div class="custom-legend mb-3" style="text-align: center;">
+                                    <span class="legend-item" data-dataset="0" style="color: #ff6b6b; font-weight: bold; margin: 0 15px; cursor: pointer; font-size: 14px;">
+                                        ——— Temperature (°C)
+                                    </span>
+                                    <span class="legend-item" data-dataset="1" style="color: #4ecdc4; font-weight: bold; margin: 0 15px; cursor: pointer; font-size: 14px;">
+                                        ——— Humidity (%)
+                                    </span>
+                                    <span class="legend-item" data-dataset="2" style="color: #ffc107; font-weight: bold; margin: 0 15px; cursor: pointer; font-size: 14px;">
+                                        ——— Wind Speed (m/s)
+                                    </span>
+                                </div>
+                                
                                 <canvas id="combinedChart" width="400" height="300"></canvas>
                             </div>
                             
@@ -92,7 +191,7 @@
                                 });
                                 
                                 // Combined Chart with multiple Y-axes
-                                new Chart(document.getElementById('combinedChart'), {
+                                const chart = new Chart(document.getElementById('combinedChart'), {
                                     type: 'line',
                                     data: {
                                         labels: labels,
@@ -146,27 +245,7 @@
                                         },
                                         plugins: {
                                             legend: {
-                                                display: true,
-                                                position: 'top',
-                                                labels: {
-                                                    color: '#f8f9fa',
-                                                    font: {
-                                                        size: 14,
-                                                        weight: 'bold'
-                                                    },
-                                                    padding: 20,
-                                                    usePointStyle: true,
-                                                    pointStyle: 'line'
-                                                },
-                                                onClick: function(e, legendItem, legend) {
-                                                    const index = legendItem.datasetIndex;
-                                                    const ci = legend.chart;
-                                                    const meta = ci.getDatasetMeta(index);
-                                                    
-                                                    // Toggle dataset visibility
-                                                    meta.hidden = meta.hidden === null ? !ci.data.datasets[index].hidden : null;
-                                                    ci.update();
-                                                }
+                                                display: false  // Disable default legend
                                             },
                                             tooltip: {
                                                 mode: 'index',
@@ -179,11 +258,11 @@
                                                 cornerRadius: 8,
                                                 displayColors: true,
                                                 titleFont: {
-                                                    size: 14,
+                                                    size: window.innerWidth < 768 ? 12 : 14,
                                                     weight: 'bold'
                                                 },
                                                 bodyFont: {
-                                                    size: 12
+                                                    size: window.innerWidth < 768 ? 10 : 12
                                                 }
                                             }
                                         },
@@ -192,7 +271,7 @@
                                                 ticks: {
                                                     color: '#f8f9fa',
                                                     font: {
-                                                        size: 12,
+                                                        size: window.innerWidth < 768 ? 9 : 12,
                                                         weight: 'bold'
                                                     }
                                                 },
@@ -210,14 +289,14 @@
                                                     text: 'Temperature (°C)',
                                                     color: '#ff6b6b',
                                                     font: {
-                                                        size: 13,
+                                                        size: window.innerWidth < 768 ? 10 : 13,
                                                         weight: 'bold'
                                                     }
                                                 },
                                                 ticks: {
                                                     color: '#ff6b6b',
                                                     font: {
-                                                        size: 11,
+                                                        size: window.innerWidth < 768 ? 8 : 11,
                                                         weight: 'bold'
                                                     }
                                                 },
@@ -237,14 +316,14 @@
                                                     text: 'Humidity (%)',
                                                     color: '#4ecdc4',
                                                     font: {
-                                                        size: 13,
+                                                        size: window.innerWidth < 768 ? 10 : 13,
                                                         weight: 'bold'
                                                     }
                                                 },
                                                 ticks: {
                                                     color: '#4ecdc4',
                                                     font: {
-                                                        size: 11,
+                                                        size: window.innerWidth < 768 ? 8 : 11,
                                                         weight: 'bold'
                                                     }
                                                 },
@@ -256,7 +335,7 @@
                                             },
                                             y2: {
                                                 type: 'linear',
-                                                display: false, // Hidden by default, shows when wind data is visible
+                                                display: true, // Enable wind speed axis
                                                 position: 'right',
                                                 min: 0,
                                                 title: {
@@ -264,14 +343,14 @@
                                                     text: 'Wind Speed (m/s)',
                                                     color: '#ffc107',
                                                     font: {
-                                                        size: 13,
+                                                        size: window.innerWidth < 768 ? 9 : 12,
                                                         weight: 'bold'
                                                     }
                                                 },
                                                 ticks: {
                                                     color: '#ffc107',
                                                     font: {
-                                                        size: 11,
+                                                        size: window.innerWidth < 768 ? 7 : 10,
                                                         weight: 'bold'
                                                     }
                                                 },
@@ -284,6 +363,30 @@
                                         }
                                     }
                                 });
+                                
+                                // Add click functionality to custom legend
+                                document.querySelectorAll('.legend-item').forEach(item => {
+                                    item.addEventListener('click', function() {
+                                        const datasetIndex = parseInt(this.dataset.dataset);
+                                        const meta = chart.getDatasetMeta(datasetIndex);
+                                        
+                                        // Toggle dataset visibility
+                                        meta.hidden = meta.hidden === null ? !chart.data.datasets[datasetIndex].hidden : null;
+                                        
+                                        // Update legend item opacity
+                                        if (meta.hidden) {
+                                            this.style.opacity = '0.3';
+                                            this.style.textDecoration = 'line-through';
+                                        } else {
+                                            this.style.opacity = '1';
+                                            this.style.textDecoration = 'none';
+                                        }
+                                        
+                                        chart.update();
+                                    });
+                                });
+                                
+                                // Remove the setTimeout code since we're using custom legend now
                             });
                         </script>
                     </div>
