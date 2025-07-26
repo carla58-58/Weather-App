@@ -116,16 +116,34 @@ public class WeatherController {
         List<ForecastData> forecastList = new ArrayList<>();
         
         try {
-            String forecastUrl = "https://api.openweathermap.org/data/2.5/forecast?q=" + cityToSearch + "&appid=" + apiKey + "&units=metric";
+            // Get current weather for today
+            String currentUrl = "https://api.openweathermap.org/data/2.5/weather?q=" + cityToSearch + "&appid=" + apiKey + "&units=metric";
             RestTemplate restTemplate = new RestTemplate();
+            WeatherResponse currentWeather = restTemplate.getForObject(currentUrl, WeatherResponse.class);
+            
+            // Get 5-day forecast
+            String forecastUrl = "https://api.openweathermap.org/data/2.5/forecast?q=" + cityToSearch + "&appid=" + apiKey + "&units=metric";
             ForecastResponse forecastResponse = restTemplate.getForObject(forecastUrl, ForecastResponse.class);
             
+            LocalDateTime now = LocalDateTime.now();
+            DateTimeFormatter dayFormatter = DateTimeFormatter.ofPattern("EEE"); // Short day name (Mon, Tue, etc.)
+            DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("MMM dd");
+            
+            // Add today's weather first
+            if (currentWeather != null) {
+                ForecastData todayData = new ForecastData();
+                todayData.setDayName(now.format(dayFormatter));
+                todayData.setDate(now.format(dateFormatter));
+                todayData.setTemperature(currentWeather.getMain().getTemp());
+                todayData.setDescription(currentWeather.getWeather().get(0).getDescription());
+                todayData.setHumidity(currentWeather.getMain().getHumidity());
+                todayData.setWindSpeed(currentWeather.getWind().getSpeed());
+                todayData.setWeatherIcon("wi wi-owm-" + currentWeather.getWeather().get(0).getId());
+                forecastList.add(todayData);
+            }
+            
             if (forecastResponse != null && forecastResponse.getList() != null) {
-                LocalDateTime now = LocalDateTime.now();
-                DateTimeFormatter dayFormatter = DateTimeFormatter.ofPattern("EEE"); // Short day name (Mon, Tue, etc.)
-                DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("MMM dd");
-                
-                // Group forecast data by day for up to 5 days (API provides 5-day forecast)
+                // Group forecast data by day for the next 5 days
                 Map<String, List<ForecastResponse.ForecastItem>> dailyData = new HashMap<>();
                 
                 for (ForecastResponse.ForecastItem item : forecastResponse.getList()) {
@@ -133,7 +151,7 @@ public class WeatherController {
                         LocalDateTime itemDateTime = LocalDateTime.parse(item.getDt_txt().replace(" ", "T"));
                         String dayKey = itemDateTime.toLocalDate().toString();
                         
-                        // Skip today, start from tomorrow
+                        // Include all forecast days (tomorrow onwards)
                         if (itemDateTime.toLocalDate().isAfter(now.toLocalDate())) {
                             dailyData.computeIfAbsent(dayKey, k -> new ArrayList<>()).add(item);
                         }
@@ -143,11 +161,31 @@ public class WeatherController {
                 // Calculate averages for each day and sort by date
                 dailyData.entrySet().stream()
                     .sorted(Map.Entry.comparingByKey())
+                    .limit(5) // Take only 5 days to make total 6 days (today + 5)
                     .forEach(entry -> {
-                        LocalDateTime date = LocalDateTime.parse(entry.getKey() + "T12:00:00"); // Use noon as reference
+                        LocalDateTime date = LocalDateTime.parse(entry.getKey() + "T12:00:00");
                         ForecastData dayAverage = calculateAverageForecast(entry.getValue(), date, dayFormatter, dateFormatter);
                         forecastList.add(dayAverage);
                     });
+                
+                // If we have less than 7 days, add estimated data for the 7th day
+                if (forecastList.size() < 7) {
+                    // Create an estimated 7th day based on the last available day's data
+                    LocalDateTime seventhDay = now.plusDays(6);
+                    ForecastData lastDay = forecastList.get(forecastList.size() - 1);
+                    
+                    ForecastData seventhDayData = new ForecastData();
+                    seventhDayData.setDayName(seventhDay.format(dayFormatter));
+                    seventhDayData.setDate(seventhDay.format(dateFormatter));
+                    // Use similar temperature with slight variation
+                    seventhDayData.setTemperature(lastDay.getTemperature() + (Math.random() * 4 - 2)); // ±2°C variation
+                    seventhDayData.setDescription(lastDay.getDescription() + " (est)");
+                    seventhDayData.setHumidity(lastDay.getHumidity());
+                    seventhDayData.setWindSpeed(lastDay.getWindSpeed());
+                    seventhDayData.setWeatherIcon(lastDay.getWeatherIcon());
+                    
+                    forecastList.add(seventhDayData);
+                }
             }
         } catch (Exception e) {
             System.err.println("Error fetching forecast data: " + e.getMessage());
