@@ -43,24 +43,45 @@
                     
                     <!-- Forecast Section -->
                     <div th:if="${forecast != null and !forecast.empty}" class="forecast-section mt-4">
-                        <h3 class="forecast-title">2-Day Average Forecast</h3>
-                        <div class="row">
-                            <div th:each="day : ${forecast}" class="col-12 col-md-6 mb-3">
-                                <div class="forecast-card">
-                                    <div class="forecast-day">
-                                        <h5 th:text="${day.dayName}">Day</h5>
-                                        <p class="forecast-date" th:text="${day.date}">Date</p>
+                        <h3 class="forecast-title">Weekly Temperature Forecast</h3>
+                        
+                        <!-- Weather Chart -->
+                        <div class="weather-chart">
+                            <div class="chart-container">
+                                <div class="temperature-scale">
+                                    <div class="scale-line" th:each="temp : ${#numbers.sequence(35, 0, -5)}">
+                                        <span class="scale-label" th:text="${temp} + '°'">30°</span>
                                     </div>
-                                    <div class="forecast-weather">
-                                        <span th:classappend="${day.weatherIcon} + ' forecast-icon'"></span>
-                                        <div class="forecast-details">
-                                            <p class="forecast-temp"><strong th:text="${day.temperature}">Temp</strong>°C</p>
-                                            <p class="forecast-desc" th:text="${day.description}">Description</p>
-                                            <div class="forecast-stats">
-                                                <small><i class="fas fa-tint"></i> <span th:text="${day.humidity}">Humidity</span>%</small>
-                                                <small><i class="fas fa-wind"></i> <span th:text="${day.windSpeed}">Wind</span> m/s</small>
+                                </div>
+                                
+                                <div class="chart-bars">
+                                    <div th:each="day : ${forecast}" class="day-column">
+                                        <div class="temperature-bar-container">
+                                            <div class="temperature-bar" 
+                                                 th:style="'height: ' + ${day.temperature * 3} + 'px; background: linear-gradient(to top, #ff6b6b, #4ecdc4);'">
+                                                <span class="temp-label" th:text="${day.temperature} + '°C'">20°C</span>
                                             </div>
                                         </div>
+                                        
+                                        <div class="day-info">
+                                            <div class="day-name" th:text="${day.dayName}">Mon</div>
+                                            <div class="day-date" th:text="${day.date}">Jan 15</div>
+                                            <div class="weather-icon-small">
+                                                <span th:classappend="${day.weatherIcon}"></span>
+                                            </div>
+                                            <div class="weather-desc" th:text="${day.description}">Sunny</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Additional weather details -->
+                            <div class="weather-details-grid mt-3">
+                                <div th:each="day : ${forecast}" class="day-details">
+                                    <h6 th:text="${day.dayName}">Monday</h6>
+                                    <div class="detail-row">
+                                        <small><i class="fas fa-tint"></i> <span th:text="${day.humidity}">65</span>%</small>
+                                        <small><i class="fas fa-wind"></i> <span th:text="${day.windSpeed}">3.2</span> m/s</small>
                                     </div>
                                 </div>
                             </div>

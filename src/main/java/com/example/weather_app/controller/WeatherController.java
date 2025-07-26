@@ -58,7 +58,7 @@ public class WeatherController {
             model.addAttribute("currentTime", currentDateTime.format(timeFormatter));
             
             // Fetch forecast data for tomorrow and day after tomorrow
-            List<ForecastData> forecast = getForecastData(cityToSearch);
+            List<ForecastData> forecast = getWeeklyForecastData(cityToSearch);
             model.addAttribute("forecast", forecast);
         } else {
             model.addAttribute("error", "City not found.");
@@ -112,7 +112,7 @@ public class WeatherController {
         return cities;
     }
     
-    private List<ForecastData> getForecastData(String cityToSearch) {
+    private List<ForecastData> getWeeklyForecastData(String cityToSearch) {
         List<ForecastData> forecastList = new ArrayList<>();
         
         try {
@@ -122,44 +122,32 @@ public class WeatherController {
             
             if (forecastResponse != null && forecastResponse.getList() != null) {
                 LocalDateTime now = LocalDateTime.now();
-                LocalDateTime tomorrow = now.plusDays(1);
-                LocalDateTime dayAfterTomorrow = now.plusDays(2);
-                
-                DateTimeFormatter dayFormatter = DateTimeFormatter.ofPattern("EEEE");
+                DateTimeFormatter dayFormatter = DateTimeFormatter.ofPattern("EEE"); // Short day name (Mon, Tue, etc.)
                 DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("MMM dd");
                 
-                // Collect all forecast data for tomorrow and day after tomorrow
-                List<ForecastResponse.ForecastItem> tomorrowData = new ArrayList<>();
-                List<ForecastResponse.ForecastItem> dayAfterData = new ArrayList<>();
+                // Group forecast data by day for up to 5 days (API provides 5-day forecast)
+                Map<String, List<ForecastResponse.ForecastItem>> dailyData = new HashMap<>();
                 
                 for (ForecastResponse.ForecastItem item : forecastResponse.getList()) {
                     if (item.getDt_txt() != null) {
-                        // Parse the datetime from the forecast item (format: "2024-01-15 12:00:00")
                         LocalDateTime itemDateTime = LocalDateTime.parse(item.getDt_txt().replace(" ", "T"));
+                        String dayKey = itemDateTime.toLocalDate().toString();
                         
-                        // Collect data for tomorrow
-                        if (itemDateTime.toLocalDate().equals(tomorrow.toLocalDate())) {
-                            tomorrowData.add(item);
-                        }
-                        
-                        // Collect data for day after tomorrow
-                        if (itemDateTime.toLocalDate().equals(dayAfterTomorrow.toLocalDate())) {
-                            dayAfterData.add(item);
+                        // Skip today, start from tomorrow
+                        if (itemDateTime.toLocalDate().isAfter(now.toLocalDate())) {
+                            dailyData.computeIfAbsent(dayKey, k -> new ArrayList<>()).add(item);
                         }
                     }
                 }
                 
-                // Calculate average for tomorrow
-                if (!tomorrowData.isEmpty()) {
-                    ForecastData tomorrowAverage = calculateAverageForecast(tomorrowData, tomorrow, dayFormatter, dateFormatter);
-                    forecastList.add(tomorrowAverage);
-                }
-                
-                // Calculate average for day after tomorrow
-                if (!dayAfterData.isEmpty()) {
-                    ForecastData dayAfterAverage = calculateAverageForecast(dayAfterData, dayAfterTomorrow, dayFormatter, dateFormatter);
-                    forecastList.add(dayAfterAverage);
-                }
+                // Calculate averages for each day and sort by date
+                dailyData.entrySet().stream()
+                    .sorted(Map.Entry.comparingByKey())
+                    .forEach(entry -> {
+                        LocalDateTime date = LocalDateTime.parse(entry.getKey() + "T12:00:00"); // Use noon as reference
+                        ForecastData dayAverage = calculateAverageForecast(entry.getValue(), date, dayFormatter, dateFormatter);
+                        forecastList.add(dayAverage);
+                    });
             }
         } catch (Exception e) {
             System.err.println("Error fetching forecast data: " + e.getMessage());
