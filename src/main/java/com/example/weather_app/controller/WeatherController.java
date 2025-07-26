@@ -12,6 +12,8 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 @Controller
 public class WeatherController {
@@ -44,6 +46,14 @@ public class WeatherController {
             model.addAttribute("windSpeed",weatherResponse.getWind().getSpeed());
             String weatherIcon = "wi wi-owm-" + weatherResponse.getWeather().get(0).getId();
             model.addAttribute("weatherIcon", weatherIcon);
+            
+            // Add current date and time
+            LocalDateTime currentDateTime = LocalDateTime.now();
+            DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("EEEE, MMMM dd, yyyy");
+            DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("hh:mm a");
+            
+            model.addAttribute("currentDate", currentDateTime.format(dateFormatter));
+            model.addAttribute("currentTime", currentDateTime.format(timeFormatter));
         } else {
             model.addAttribute("error", "City not found.");
         }
