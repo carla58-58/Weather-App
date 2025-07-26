@@ -49,22 +49,10 @@
                         
                         <!-- Weather Line Charts -->
                         <div class="weather-charts">
-                            <!-- Temperature Chart -->
+                            <!-- Combined Chart -->
                             <div class="chart-container mb-4">
-                                <h5 class="chart-title">Temperature (°C)</h5>
-                                <canvas id="temperatureChart" width="400" height="200"></canvas>
-                            </div>
-                            
-                            <!-- Humidity Chart -->
-                            <div class="chart-container mb-4">
-                                <h5 class="chart-title">Humidity (%)</h5>
-                                <canvas id="humidityChart" width="400" height="200"></canvas>
-                            </div>
-                            
-                            <!-- Wind Speed Chart -->
-                            <div class="chart-container mb-4">
-                                <h5 class="chart-title">Wind Speed (m/s)</h5>
-                                <canvas id="windChart" width="400" height="200"></canvas>
+                                <h5 class="chart-title">Weather Trends - Click legend to toggle data</h5>
+                                <canvas id="combinedChart" width="400" height="300"></canvas>
                             </div>
                             
                             <!-- Daily Weather Summary -->
@@ -103,141 +91,195 @@
                                     windSpeed.push(day.windSpeed);
                                 });
                                 
-                                // Common chart options
-                                const commonOptions = {
-                                    responsive: true,
-                                    maintainAspectRatio: false,
-                                    plugins: {
-                                        legend: {
-                                            display: false
-                                        }
-                                    },
-                                    scales: {
-                                        x: {
-                                            ticks: {
-                                                color: '#f8f9fa',
-                                                font: {
-                                                    size: 11
-                                                }
-                                            },
-                                            grid: {
-                                                color: 'rgba(255, 255, 255, 0.1)'
-                                            }
-                                        },
-                                        y: {
-                                            ticks: {
-                                                color: '#f8f9fa',
-                                                font: {
-                                                    size: 11
-                                                }
-                                            },
-                                            grid: {
-                                                color: 'rgba(255, 255, 255, 0.1)'
-                                            }
-                                        }
-                                    }
-                                };
-                                
-                                // Temperature Chart
-                                new Chart(document.getElementById('temperatureChart'), {
+                                // Combined Chart with multiple Y-axes
+                                new Chart(document.getElementById('combinedChart'), {
                                     type: 'line',
                                     data: {
                                         labels: labels,
                                         datasets: [{
+                                            label: 'Temperature (°C)',
                                             data: temperatures,
                                             borderColor: '#ff6b6b',
                                             backgroundColor: 'rgba(255, 107, 107, 0.1)',
                                             borderWidth: 3,
-                                            fill: true,
+                                            fill: false,
                                             tension: 0.4,
                                             pointBackgroundColor: '#ff6b6b',
                                             pointBorderColor: '#fff',
                                             pointBorderWidth: 2,
-                                            pointRadius: 5
-                                        }]
-                                    },
-                                    options: {
-                                        ...commonOptions,
-                                        scales: {
-                                            ...commonOptions.scales,
-                                            y: {
-                                                ...commonOptions.scales.y,
-                                                title: {
-                                                    display: true,
-                                                    text: 'Temperature (°C)',
-                                                    color: '#f8f9fa'
-                                                }
-                                            }
-                                        }
-                                    }
-                                });
-                                
-                                // Humidity Chart
-                                new Chart(document.getElementById('humidityChart'), {
-                                    type: 'line',
-                                    data: {
-                                        labels: labels,
-                                        datasets: [{
+                                            pointRadius: 6,
+                                            yAxisID: 'y'
+                                        }, {
+                                            label: 'Humidity (%)',
                                             data: humidity,
                                             borderColor: '#4ecdc4',
                                             backgroundColor: 'rgba(78, 205, 196, 0.1)',
                                             borderWidth: 3,
-                                            fill: true,
+                                            fill: false,
                                             tension: 0.4,
                                             pointBackgroundColor: '#4ecdc4',
                                             pointBorderColor: '#fff',
                                             pointBorderWidth: 2,
-                                            pointRadius: 5
-                                        }]
-                                    },
-                                    options: {
-                                        ...commonOptions,
-                                        scales: {
-                                            ...commonOptions.scales,
-                                            y: {
-                                                ...commonOptions.scales.y,
-                                                title: {
-                                                    display: true,
-                                                    text: 'Humidity (%)',
-                                                    color: '#f8f9fa'
-                                                },
-                                                min: 0,
-                                                max: 100
-                                            }
-                                        }
-                                    }
-                                });
-                                
-                                // Wind Speed Chart
-                                new Chart(document.getElementById('windChart'), {
-                                    type: 'line',
-                                    data: {
-                                        labels: labels,
-                                        datasets: [{
+                                            pointRadius: 6,
+                                            yAxisID: 'y1'
+                                        }, {
+                                            label: 'Wind Speed (m/s)',
                                             data: windSpeed,
                                             borderColor: '#ffc107',
                                             backgroundColor: 'rgba(255, 193, 7, 0.1)',
                                             borderWidth: 3,
-                                            fill: true,
+                                            fill: false,
                                             tension: 0.4,
                                             pointBackgroundColor: '#ffc107',
                                             pointBorderColor: '#fff',
                                             pointBorderWidth: 2,
-                                            pointRadius: 5
+                                            pointRadius: 6,
+                                            yAxisID: 'y2'
                                         }]
                                     },
                                     options: {
-                                        ...commonOptions,
+                                        responsive: true,
+                                        maintainAspectRatio: false,
+                                        interaction: {
+                                            mode: 'index',
+                                            intersect: false,
+                                        },
+                                        plugins: {
+                                            legend: {
+                                                display: true,
+                                                position: 'top',
+                                                labels: {
+                                                    color: '#f8f9fa',
+                                                    font: {
+                                                        size: 14,
+                                                        weight: 'bold'
+                                                    },
+                                                    padding: 20,
+                                                    usePointStyle: true,
+                                                    pointStyle: 'line'
+                                                },
+                                                onClick: function(e, legendItem, legend) {
+                                                    const index = legendItem.datasetIndex;
+                                                    const ci = legend.chart;
+                                                    const meta = ci.getDatasetMeta(index);
+                                                    
+                                                    // Toggle dataset visibility
+                                                    meta.hidden = meta.hidden === null ? !ci.data.datasets[index].hidden : null;
+                                                    ci.update();
+                                                }
+                                            },
+                                            tooltip: {
+                                                mode: 'index',
+                                                intersect: false,
+                                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                                titleColor: '#f8f9fa',
+                                                bodyColor: '#f8f9fa',
+                                                borderColor: 'rgba(255, 255, 255, 0.3)',
+                                                borderWidth: 1,
+                                                cornerRadius: 8,
+                                                displayColors: true,
+                                                titleFont: {
+                                                    size: 14,
+                                                    weight: 'bold'
+                                                },
+                                                bodyFont: {
+                                                    size: 12
+                                                }
+                                            }
+                                        },
                                         scales: {
-                                            ...commonOptions.scales,
+                                            x: {
+                                                ticks: {
+                                                    color: '#f8f9fa',
+                                                    font: {
+                                                        size: 12,
+                                                        weight: 'bold'
+                                                    }
+                                                },
+                                                grid: {
+                                                    color: 'rgba(255, 255, 255, 0.1)',
+                                                    drawBorder: false
+                                                }
+                                            },
                                             y: {
-                                                ...commonOptions.scales.y,
+                                                type: 'linear',
+                                                display: true,
+                                                position: 'left',
+                                                title: {
+                                                    display: true,
+                                                    text: 'Temperature (°C)',
+                                                    color: '#ff6b6b',
+                                                    font: {
+                                                        size: 13,
+                                                        weight: 'bold'
+                                                    }
+                                                },
+                                                ticks: {
+                                                    color: '#ff6b6b',
+                                                    font: {
+                                                        size: 11,
+                                                        weight: 'bold'
+                                                    }
+                                                },
+                                                grid: {
+                                                    color: 'rgba(255, 107, 107, 0.1)',
+                                                    drawBorder: false
+                                                }
+                                            },
+                                            y1: {
+                                                type: 'linear',
+                                                display: true,
+                                                position: 'right',
+                                                min: 0,
+                                                max: 100,
+                                                title: {
+                                                    display: true,
+                                                    text: 'Humidity (%)',
+                                                    color: '#4ecdc4',
+                                                    font: {
+                                                        size: 13,
+                                                        weight: 'bold'
+                                                    }
+                                                },
+                                                ticks: {
+                                                    color: '#4ecdc4',
+                                                    font: {
+                                                        size: 11,
+                                                        weight: 'bold'
+                                                    }
+                                                },
+                                                grid: {
+                                                    drawOnChartArea: false,
+                                                    color: 'rgba(78, 205, 196, 0.1)',
+                                                    drawBorder: false
+                                                }
+                                            },
+                                            y2: {
+                                                type: 'linear',
+                                                display: false, // Hidden by default, shows when wind data is visible
+                                                position: 'right',
+                                                min: 0,
                                                 title: {
                                                     display: true,
                                                     text: 'Wind Speed (m/s)',
-                                                    color: '#f8f9fa'
+                                                    color: '#ffc107',
+                                                    font: {
+                                                        size: 13,
+                                                        weight: 'bold'
+                                                    }
                                                 },
-                                                min: 0
+                                                ticks: {
+                                                    color: '#ffc107',
+                                                    font: {
+                                                        size: 11,
+                                                        weight: 'bold'
+                                                    }
+                                                },
+                                                grid: {
+                                                    drawOnChartArea: false,
+                                                    color: 'rgba(255, 193, 7, 0.1)',
+                                                    drawBorder: false
+                                                }
                                             }
                                         }
                                     }
