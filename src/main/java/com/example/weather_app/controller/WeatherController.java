@@ -128,39 +128,37 @@ public class WeatherController {
                 DateTimeFormatter dayFormatter = DateTimeFormatter.ofPattern("EEEE");
                 DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("MMM dd");
                 
-                // Process forecast data for tomorrow and day after tomorrow
-                ForecastData tomorrowForecast = null;
-                ForecastData dayAfterForecast = null;
+                // Collect all forecast data for tomorrow and day after tomorrow
+                List<ForecastResponse.ForecastItem> tomorrowData = new ArrayList<>();
+                List<ForecastResponse.ForecastItem> dayAfterData = new ArrayList<>();
                 
                 for (ForecastResponse.ForecastItem item : forecastResponse.getList()) {
                     if (item.getDt_txt() != null) {
                         // Parse the datetime from the forecast item (format: "2024-01-15 12:00:00")
                         LocalDateTime itemDateTime = LocalDateTime.parse(item.getDt_txt().replace(" ", "T"));
                         
-                        // Check if this forecast is for tomorrow around noon
-                        if (tomorrowForecast == null && itemDateTime.toLocalDate().equals(tomorrow.toLocalDate()) 
-                            && itemDateTime.getHour() >= 12) {
-                            tomorrowForecast = createForecastData(item, tomorrow, dayFormatter, dateFormatter);
+                        // Collect data for tomorrow
+                        if (itemDateTime.toLocalDate().equals(tomorrow.toLocalDate())) {
+                            tomorrowData.add(item);
                         }
                         
-                        // Check if this forecast is for day after tomorrow around noon
-                        if (dayAfterForecast == null && itemDateTime.toLocalDate().equals(dayAfterTomorrow.toLocalDate()) 
-                            && itemDateTime.getHour() >= 12) {
-                            dayAfterForecast = createForecastData(item, dayAfterTomorrow, dayFormatter, dateFormatter);
-                        }
-                        
-                        // Break if we have both forecasts
-                        if (tomorrowForecast != null && dayAfterForecast != null) {
-                            break;
+                        // Collect data for day after tomorrow
+                        if (itemDateTime.toLocalDate().equals(dayAfterTomorrow.toLocalDate())) {
+                            dayAfterData.add(item);
                         }
                     }
                 }
                 
-                if (tomorrowForecast != null) {
-                    forecastList.add(tomorrowForecast);
+                // Calculate average for tomorrow
+                if (!tomorrowData.isEmpty()) {
+                    ForecastData tomorrowAverage = calculateAverageForecast(tomorrowData, tomorrow, dayFormatter, dateFormatter);
+                    forecastList.add(tomorrowAverage);
                 }
-                if (dayAfterForecast != null) {
-                    forecastList.add(dayAfterForecast);
+                
+                // Calculate average for day after tomorrow
+                if (!dayAfterData.isEmpty()) {
+                    ForecastData dayAfterAverage = calculateAverageForecast(dayAfterData, dayAfterTomorrow, dayFormatter, dateFormatter);
+                    forecastList.add(dayAfterAverage);
                 }
             }
         } catch (Exception e) {
@@ -170,17 +168,51 @@ public class WeatherController {
         return forecastList;
     }
     
-    private ForecastData createForecastData(ForecastResponse.ForecastItem item, LocalDateTime date, 
-                                          DateTimeFormatter dayFormatter, DateTimeFormatter dateFormatter) {
+    private ForecastData calculateAverageForecast(List<ForecastResponse.ForecastItem> dayData, LocalDateTime date, 
+                                                DateTimeFormatter dayFormatter, DateTimeFormatter dateFormatter) {
+        double totalTemp = 0;
+        double totalHumidity = 0;
+        double totalWindSpeed = 0;
+        Map<String, Integer> weatherDescriptions = new HashMap<>();
+        Map<Integer, Integer> weatherIds = new HashMap<>();
+        
+        // Calculate averages and find most common weather condition
+        for (ForecastResponse.ForecastItem item : dayData) {
+            totalTemp += item.getMain().getTemp();
+            totalHumidity += item.getMain().getHumidity();
+            totalWindSpeed += item.getWind().getSpeed();
+            
+            // Count weather descriptions and IDs
+            String description = item.getWeather().get(0).getDescription();
+            int weatherId = item.getWeather().get(0).getId();
+            
+            weatherDescriptions.put(description, weatherDescriptions.getOrDefault(description, 0) + 1);
+            weatherIds.put(weatherId, weatherIds.getOrDefault(weatherId, 0) + 1);
+        }
+        
+        int dataCount = dayData.size();
+        
+        // Find most common weather condition
+        String mostCommonDescription = weatherDescriptions.entrySet().stream()
+            .max(Map.Entry.comparingByValue())
+            .map(Map.Entry::getKey)
+            .orElse("Unknown");
+            
+        int mostCommonWeatherId = weatherIds.entrySet().stream()
+            .max(Map.Entry.comparingByValue())
+            .map(Map.Entry::getKey)
+            .orElse(800); // Default to clear sky
+        
+        // Create forecast data with averages
         ForecastData forecast = new ForecastData();
         forecast.setDayName(date.format(dayFormatter));
         forecast.setDate(date.format(dateFormatter));
-        forecast.setTemperature(item.getMain().getTemp());
-        forecast.setDescription(item.getWeather().get(0).getDescription());
-        forecast.setHumidity(item.getMain().getHumidity());
-        forecast.setWindSpeed(item.getWind().getSpeed());
+        forecast.setTemperature(Math.round(totalTemp / dataCount * 10.0) / 10.0); // Round to 1 decimal place
+        forecast.setDescription(mostCommonDescription + " (avg)");
+        forecast.setHumidity((int) Math.round(totalHumidity / dataCount));
+        forecast.setWindSpeed(Math.round(totalWindSpeed / dataCount * 10.0) / 10.0); // Round to 1 decimal place
         
-        String weatherIcon = "wi wi-owm-" + item.getWeather().get(0).getId();
+        String weatherIcon = "wi wi-owm-" + mostCommonWeatherId;
         forecast.setWeatherIcon(weatherIcon);
         
         return forecast;
