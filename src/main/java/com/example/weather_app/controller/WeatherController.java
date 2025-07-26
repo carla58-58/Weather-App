@@ -20,23 +20,7 @@ public class WeatherController {
 
     @GetMapping("/weather")
     public String getWeather(@RequestParam("city") String city, Model model){
-        // Handle common city disambiguations
-        String searchQuery = city;
-        if (city.equalsIgnoreCase("melbourne") || city.equalsIgnoreCase("melbourne au") || city.equalsIgnoreCase("melbourne australia")) {
-            searchQuery = "Melbourne,AU";
-        } else if (city.equalsIgnoreCase("melbourne us") || city.equalsIgnoreCase("melbourne usa")) {
-            searchQuery = "Melbourne,US";
-        } else if (city.equalsIgnoreCase("sydney") || city.equalsIgnoreCase("sydney au") || city.equalsIgnoreCase("sydney australia")) {
-            searchQuery = "Sydney,AU";
-        } else if (city.equalsIgnoreCase("perth") || city.equalsIgnoreCase("perth au") || city.equalsIgnoreCase("perth australia")) {
-            searchQuery = "Perth,AU";
-        } else if (city.equalsIgnoreCase("adelaide") || city.equalsIgnoreCase("adelaide au") || city.equalsIgnoreCase("adelaide australia")) {
-            searchQuery = "Adelaide,AU";
-        } else if (city.equalsIgnoreCase("brisbane") || city.equalsIgnoreCase("brisbane au") || city.equalsIgnoreCase("brisbane australia")) {
-            searchQuery = "Brisbane,AU";
-        }
-        
-        String url ="https://api.openweathermap.org/data/2.5/weather?q=" + searchQuery + "&appId=" + apiKey + "&units=metric"; 
+        String url ="https://api.openweathermap.org/data/2.5/weather?q=" + city + "&appId=" + apiKey + "&units=metric"; 
         RestTemplate restTemplate = new RestTemplate();
         WeatherResponse weatherResponse = restTemplate.getForObject(url, WeatherResponse.class);
 
