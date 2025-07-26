@@ -40,6 +40,33 @@
                     <p class="card-text"><strong>Temperature:</strong> <span th:text="${temperature}">Temperature</span>°C</p>
                     <p class="card-text"><strong>Humidity:</strong> <span th:text="${humidity}">Humidity</span>%</p>
                     <p class="card-text"><strong>Wind Speed:</strong> <span th:text="${windSpeed}">Wind Speed</span> m/s</p>
+                    
+                    <!-- Forecast Section -->
+                    <div th:if="${forecast != null and !forecast.empty}" class="forecast-section mt-4">
+                        <h3 class="forecast-title">2-Day Forecast</h3>
+                        <div class="row">
+                            <div th:each="day : ${forecast}" class="col-12 col-md-6 mb-3">
+                                <div class="forecast-card">
+                                    <div class="forecast-day">
+                                        <h5 th:text="${day.dayName}">Day</h5>
+                                        <p class="forecast-date" th:text="${day.date}">Date</p>
+                                    </div>
+                                    <div class="forecast-weather">
+                                        <span th:classappend="${day.weatherIcon} + ' forecast-icon'"></span>
+                                        <div class="forecast-details">
+                                            <p class="forecast-temp"><strong th:text="${day.temperature}">Temp</strong>°C</p>
+                                            <p class="forecast-desc" th:text="${day.description}">Description</p>
+                                            <div class="forecast-stats">
+                                                <small><i class="fas fa-tint"></i> <span th:text="${day.humidity}">Humidity</span>%</small>
+                                                <small><i class="fas fa-wind"></i> <span th:text="${day.windSpeed}">Wind</span> m/s</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <a href="/" class="btn btn-secondary btn-block">Back</a>
                     <div th:if="${error}" class="alert alert-danger mt-3">
                         <p>Error: <span th:text="${error}"></span></p>

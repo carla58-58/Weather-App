@@ -2,6 +2,8 @@ package com.example.weather_app.controller;
 
 import org.springframework.ui.Model;
 import com.example.weather_app.model.WeatherResponse;
+import com.example.weather_app.model.ForecastResponse;
+import com.example.weather_app.model.ForecastData;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -54,6 +56,10 @@ public class WeatherController {
             
             model.addAttribute("currentDate", currentDateTime.format(dateFormatter));
             model.addAttribute("currentTime", currentDateTime.format(timeFormatter));
+            
+            // Fetch forecast data for tomorrow and day after tomorrow
+            List<ForecastData> forecast = getForecastData(cityToSearch);
+            model.addAttribute("forecast", forecast);
         } else {
             model.addAttribute("error", "City not found.");
         }
@@ -104,5 +110,79 @@ public class WeatherController {
         }
         
         return cities;
+    }
+    
+    private List<ForecastData> getForecastData(String cityToSearch) {
+        List<ForecastData> forecastList = new ArrayList<>();
+        
+        try {
+            String forecastUrl = "https://api.openweathermap.org/data/2.5/forecast?q=" + cityToSearch + "&appid=" + apiKey + "&units=metric";
+            RestTemplate restTemplate = new RestTemplate();
+            ForecastResponse forecastResponse = restTemplate.getForObject(forecastUrl, ForecastResponse.class);
+            
+            if (forecastResponse != null && forecastResponse.getList() != null) {
+                LocalDateTime now = LocalDateTime.now();
+                LocalDateTime tomorrow = now.plusDays(1);
+                LocalDateTime dayAfterTomorrow = now.plusDays(2);
+                
+                DateTimeFormatter dayFormatter = DateTimeFormatter.ofPattern("EEEE");
+                DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("MMM dd");
+                
+                // Process forecast data for tomorrow and day after tomorrow
+                ForecastData tomorrowForecast = null;
+                ForecastData dayAfterForecast = null;
+                
+                for (ForecastResponse.ForecastItem item : forecastResponse.getList()) {
+                    if (item.getDt_txt() != null) {
+                        // Parse the datetime from the forecast item (format: "2024-01-15 12:00:00")
+                        LocalDateTime itemDateTime = LocalDateTime.parse(item.getDt_txt().replace(" ", "T"));
+                        
+                        // Check if this forecast is for tomorrow around noon
+                        if (tomorrowForecast == null && itemDateTime.toLocalDate().equals(tomorrow.toLocalDate()) 
+                            && itemDateTime.getHour() >= 12) {
+                            tomorrowForecast = createForecastData(item, tomorrow, dayFormatter, dateFormatter);
+                        }
+                        
+                        // Check if this forecast is for day after tomorrow around noon
+                        if (dayAfterForecast == null && itemDateTime.toLocalDate().equals(dayAfterTomorrow.toLocalDate()) 
+                            && itemDateTime.getHour() >= 12) {
+                            dayAfterForecast = createForecastData(item, dayAfterTomorrow, dayFormatter, dateFormatter);
+                        }
+                        
+                        // Break if we have both forecasts
+                        if (tomorrowForecast != null && dayAfterForecast != null) {
+                            break;
+                        }
+                    }
+                }
+                
+                if (tomorrowForecast != null) {
+                    forecastList.add(tomorrowForecast);
+                }
+                if (dayAfterForecast != null) {
+                    forecastList.add(dayAfterForecast);
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Error fetching forecast data: " + e.getMessage());
+        }
+        
+        return forecastList;
+    }
+    
+    private ForecastData createForecastData(ForecastResponse.ForecastItem item, LocalDateTime date, 
+                                          DateTimeFormatter dayFormatter, DateTimeFormatter dateFormatter) {
+        ForecastData forecast = new ForecastData();
+        forecast.setDayName(date.format(dayFormatter));
+        forecast.setDate(date.format(dateFormatter));
+        forecast.setTemperature(item.getMain().getTemp());
+        forecast.setDescription(item.getWeather().get(0).getDescription());
+        forecast.setHumidity(item.getMain().getHumidity());
+        forecast.setWindSpeed(item.getWind().getSpeed());
+        
+        String weatherIcon = "wi wi-owm-" + item.getWeather().get(0).getId();
+        forecast.setWeatherIcon(weatherIcon);
+        
+        return forecast;
     }
 }
