@@ -145,10 +145,14 @@
                     </div>
                     
                     <span th:classappend="${weatherIcon} + ' weather-icon'"></span>
-                    <p class="card-text"><strong>Description:</strong> <span th:text="${weatherDescription}">Description</span></p>
-                    <p class="card-text"><strong style="color: #ff6b6b;">Temperature:</strong> <span th:text="${temperature}" style="color: #ff6b6b; font-weight: bold;">Temperature</span>°C</p>
-                    <p class="card-text"><strong style="color: #4ecdc4;">Rain Probability:</strong> <span th:text="${rainProbability}" style="color: #4ecdc4; font-weight: bold;">Rain Probability</span>%</p>
-                    <p class="card-text"><strong style="color: #ffc107;">Wind Speed:</strong> <span th:text="${windSpeed}" style="color: #ffc107; font-weight: bold;">Wind Speed</span> m/s</p>
+                    
+                    <!-- Weather Details with proper spacing -->
+                    <div class="weather-details mt-4">
+                        <p class="card-text"><strong>Description:</strong> <span th:text="${weatherDescription}">Description</span></p>
+                        <p class="card-text"><strong style="color: #ff6b6b;">Temperature:</strong> <span th:text="${temperature}" style="color: #ff6b6b; font-weight: bold;">Temperature</span>°C</p>
+                        <p class="card-text"><strong style="color: #4ecdc4;">Rain Probability:</strong> <span th:text="${rainProbability}" style="color: #4ecdc4; font-weight: bold;">Rain Probability</span>%</p>
+                        <p class="card-text"><strong style="color: #ffc107;">Wind Speed:</strong> <span th:text="${windSpeed}" style="color: #ffc107; font-weight: bold;">Wind Speed</span> m/s</p>
+                    </div>
                     
                     <!-- Forecast Section -->
                     <div th:if="${forecast != null and !forecast.empty}" class="forecast-section mt-4">
