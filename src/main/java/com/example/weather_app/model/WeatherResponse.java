@@ -43,11 +43,20 @@ public class WeatherResponse {
         this.wind = wind;
     }
 
+    public long getTimezone() {
+        return timezone;
+    }
+
+    public void setTimezone(long timezone) {
+        this.timezone = timezone;
+    }
+
     private String name;
     private Sys sys;
     private List<Weather> weather;
     private Main main;
     private Wind wind;
+    private long timezone; // Timezone offset in seconds from UTC
     public static class Sys {
         public String getCountry() {
             return country;

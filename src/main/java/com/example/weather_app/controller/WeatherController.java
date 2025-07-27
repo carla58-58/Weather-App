@@ -16,6 +16,9 @@ import java.util.Map;
 import java.util.HashMap;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.Instant;
 
 @Controller
 public class WeatherController {
@@ -50,13 +53,16 @@ public class WeatherController {
             String weatherIcon = "wi wi-owm-" + weatherResponse.getWeather().get(0).getId();
             model.addAttribute("weatherIcon", weatherIcon);
             
-            // Add current date and time
-            LocalDateTime currentDateTime = LocalDateTime.now();
+            // Add current date and time for the searched city using timezone offset
+            long timezoneOffset = weatherResponse.getTimezone(); // Offset in seconds from UTC
+            Instant currentInstant = Instant.now();
+            ZonedDateTime cityDateTime = currentInstant.atOffset(ZoneOffset.ofTotalSeconds((int) timezoneOffset)).toZonedDateTime();
+            
             DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("EEEE, MMMM dd, yyyy");
             DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("hh:mm a");
             
-            model.addAttribute("currentDate", currentDateTime.format(dateFormatter));
-            model.addAttribute("currentTime", currentDateTime.format(timeFormatter));
+            model.addAttribute("currentDate", cityDateTime.format(dateFormatter));
+            model.addAttribute("currentTime", cityDateTime.format(timeFormatter));
             
             // Fetch forecast data for tomorrow and day after tomorrow
             List<ForecastData> forecast = getWeeklyForecastData(cityToSearch);
@@ -83,6 +89,7 @@ public class WeatherController {
             RestTemplate restTemplate = new RestTemplate();
             
             // The geocoding API returns an array of location objects
+            @SuppressWarnings("unchecked")
             List<Map<String, Object>> geoResponse = restTemplate.getForObject(geoUrl, List.class);
             
             if (geoResponse != null) {
