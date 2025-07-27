@@ -46,7 +46,9 @@ public class WeatherController {
             model.addAttribute("city",weatherResponse.getName());
             model.addAttribute("country",weatherResponse.getSys().getCountry());
             model.addAttribute("weatherDescription",weatherResponse.getWeather().get(0).getDescription());
-            model.addAttribute("temperature",weatherResponse.getMain().getTemp());
+            // Format temperature to 1 decimal place
+            double temperature = Math.round(weatherResponse.getMain().getTemp() * 10.0) / 10.0;
+            model.addAttribute("temperature", temperature);
             model.addAttribute("humidity",weatherResponse.getMain().getHumidity());
             model.addAttribute("rainProbability", calculateRainProbability(weatherResponse.getWeather().get(0).getId()));
             model.addAttribute("windSpeed",weatherResponse.getWind().getSpeed());
@@ -142,7 +144,9 @@ public class WeatherController {
                 ForecastData todayData = new ForecastData();
                 todayData.setDayName(now.format(dayFormatter));
                 todayData.setDate(now.format(dateFormatter));
-                todayData.setTemperature(currentWeather.getMain().getTemp());
+                // Format temperature to 1 decimal place
+                double todayTemp = Math.round(currentWeather.getMain().getTemp() * 10.0) / 10.0;
+                todayData.setTemperature(todayTemp);
                 todayData.setDescription(currentWeather.getWeather().get(0).getDescription());
                 todayData.setHumidity(currentWeather.getMain().getHumidity());
                 todayData.setRainProbability(calculateRainProbability(currentWeather.getWeather().get(0).getId()));
@@ -186,8 +190,9 @@ public class WeatherController {
                     ForecastData seventhDayData = new ForecastData();
                     seventhDayData.setDayName(seventhDay.format(dayFormatter));
                     seventhDayData.setDate(seventhDay.format(dateFormatter));
-                    // Use similar temperature with slight variation
-                    seventhDayData.setTemperature(lastDay.getTemperature() + (Math.random() * 4 - 2)); // ±2°C variation
+                    // Use similar temperature with slight variation, formatted to 1 decimal place
+                    double estimatedTemp = Math.round((lastDay.getTemperature() + (Math.random() * 4 - 2)) * 10.0) / 10.0;
+                    seventhDayData.setTemperature(estimatedTemp);
                     seventhDayData.setDescription(lastDay.getDescription() + " (est)");
                     seventhDayData.setHumidity(lastDay.getHumidity());
                     seventhDayData.setRainProbability(lastDay.getRainProbability());
