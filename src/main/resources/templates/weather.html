@@ -24,7 +24,7 @@
         canvas + div span:nth-child(2),
         .chartjs-legend ul li:nth-child(2) span,
         #combinedChart + .legend-container .legend-item:nth-child(2) {
-            color: #4ecdc4 !important; /* Humidity - Green/Teal */
+            color: #4ecdc4 !important; /* Rain Probability - Green/Teal */
         }
         
         canvas + div span:nth-child(3),
@@ -53,48 +53,70 @@
         @media (max-width: 768px) {
             .chart-container {
                 margin-bottom: 2rem !important;
+                padding: 0 2px !important;
             }
             
             .custom-legend {
                 flex-direction: column !important;
                 align-items: center !important;
                 gap: 8px !important;
+                margin-bottom: 0.5rem !important;
             }
             
             .legend-item {
-                font-size: 12px !important;
+                font-size: 13px !important;
                 margin: 0 5px !important;
                 display: block !important;
                 text-align: center !important;
             }
             
             #combinedChart {
-                max-height: 300px !important;
+                max-height: 400px !important;
+                height: 400px !important;
+                width: 100% !important;
             }
             
             .chart-title {
-                font-size: 1rem !important;
-                margin-bottom: 1rem !important;
+                font-size: 1.1rem !important;
+                margin-bottom: 0.8rem !important;
             }
             
             .forecast-title {
-                font-size: 1.3rem !important;
-                margin-bottom: 1.5rem !important;
+                font-size: 1.4rem !important;
+                margin-bottom: 1.2rem !important;
+            }
+            
+            .card-body {
+                padding: 0.5rem !important;
             }
         }
         
         @media (max-width: 576px) {
             .custom-legend {
-                margin-bottom: 1rem !important;
+                margin-bottom: 0.8rem !important;
             }
             
             .legend-item {
-                font-size: 11px !important;
-                margin: 2px 0 !important;
+                font-size: 12px !important;
+                margin: 3px 0 !important;
             }
             
             #combinedChart {
-                max-height: 250px !important;
+                max-height: 350px !important;
+                height: 350px !important;
+                width: 100% !important;
+            }
+            
+            .chart-title {
+                font-size: 1rem !important;
+            }
+            
+            .card-body {
+                padding: 0.4rem !important;
+            }
+            
+            .chart-container {
+                padding: 0 1px !important;
             }
         }
     </style>
@@ -125,7 +147,7 @@
                     <span th:classappend="${weatherIcon} + ' weather-icon'"></span>
                     <p class="card-text"><strong>Description:</strong> <span th:text="${weatherDescription}">Description</span></p>
                     <p class="card-text"><strong style="color: #ff6b6b;">Temperature:</strong> <span th:text="${temperature}" style="color: #ff6b6b; font-weight: bold;">Temperature</span>°C</p>
-                    <p class="card-text"><strong style="color: #4ecdc4;">Humidity:</strong> <span th:text="${humidity}" style="color: #4ecdc4; font-weight: bold;">Humidity</span>%</p>
+                    <p class="card-text"><strong style="color: #4ecdc4;">Rain Probability:</strong> <span th:text="${rainProbability}" style="color: #4ecdc4; font-weight: bold;">Rain Probability</span>%</p>
                     <p class="card-text"><strong style="color: #ffc107;">Wind Speed:</strong> <span th:text="${windSpeed}" style="color: #ffc107; font-weight: bold;">Wind Speed</span> m/s</p>
                     
                     <!-- Forecast Section -->
@@ -144,7 +166,7 @@
                                         ——— Temperature (°C)
                                     </span>
                                     <span class="legend-item" data-dataset="1" style="color: #4ecdc4; font-weight: bold; margin: 0 15px; cursor: pointer; font-size: 14px;">
-                                        ——— Humidity (%)
+                                        ——— Rain Probability (%)
                                     </span>
                                     <span class="legend-item" data-dataset="2" style="color: #ffc107; font-weight: bold; margin: 0 15px; cursor: pointer; font-size: 14px;">
                                         ——— Wind Speed (m/s)
@@ -180,13 +202,13 @@
                                 
                                 const labels = [];
                                 const temperatures = [];
-                                const humidity = [];
+                                const rainProbability = [];
                                 const windSpeed = [];
                                 
                                 forecastData.forEach(day => {
                                     labels.push(day.dayName + '\n' + day.date);
                                     temperatures.push(day.temperature);
-                                    humidity.push(day.humidity);
+                                    rainProbability.push(day.rainProbability);
                                     windSpeed.push(day.windSpeed);
                                 });
                                 
@@ -206,11 +228,12 @@
                                             pointBackgroundColor: '#ff6b6b',
                                             pointBorderColor: '#fff',
                                             pointBorderWidth: 2,
-                                            pointRadius: 6,
+                                            pointRadius: window.innerWidth < 768 ? 4 : 6, // Smaller on mobile
+                                            pointHoverRadius: window.innerWidth < 768 ? 6 : 8,
                                             yAxisID: 'y'
                                         }, {
-                                            label: 'Humidity (%)',
-                                            data: humidity,
+                                            label: 'Rain Probability (%)',
+                                            data: rainProbability,
                                             borderColor: '#4ecdc4',
                                             backgroundColor: 'rgba(78, 205, 196, 0.1)',
                                             borderWidth: 3,
@@ -219,7 +242,8 @@
                                             pointBackgroundColor: '#4ecdc4',
                                             pointBorderColor: '#fff',
                                             pointBorderWidth: 2,
-                                            pointRadius: 6,
+                                            pointRadius: window.innerWidth < 768 ? 4 : 6, // Smaller on mobile
+                                            pointHoverRadius: window.innerWidth < 768 ? 6 : 8,
                                             yAxisID: 'y1'
                                         }, {
                                             label: 'Wind Speed (m/s)',
@@ -232,7 +256,8 @@
                                             pointBackgroundColor: '#ffc107',
                                             pointBorderColor: '#fff',
                                             pointBorderWidth: 2,
-                                            pointRadius: 6,
+                                            pointRadius: window.innerWidth < 768 ? 4 : 6, // Smaller on mobile
+                                            pointHoverRadius: window.innerWidth < 768 ? 6 : 8,
                                             yAxisID: 'y2'
                                         }]
                                     },
@@ -258,11 +283,11 @@
                                                 cornerRadius: 8,
                                                 displayColors: true,
                                                 titleFont: {
-                                                    size: window.innerWidth < 768 ? 12 : 14,
+                                                    size: window.innerWidth < 768 ? 13 : 14,
                                                     weight: 'bold'
                                                 },
                                                 bodyFont: {
-                                                    size: window.innerWidth < 768 ? 10 : 12
+                                                    size: window.innerWidth < 768 ? 11 : 12
                                                 }
                                             }
                                         },
@@ -271,7 +296,7 @@
                                                 ticks: {
                                                     color: '#f8f9fa',
                                                     font: {
-                                                        size: window.innerWidth < 768 ? 9 : 12,
+                                                        size: window.innerWidth < 768 ? 10 : 12,
                                                         weight: 'bold'
                                                     }
                                                 },
@@ -289,14 +314,14 @@
                                                     text: 'Temperature (°C)',
                                                     color: '#ff6b6b',
                                                     font: {
-                                                        size: window.innerWidth < 768 ? 10 : 13,
+                                                        size: window.innerWidth < 768 ? 11 : 13,
                                                         weight: 'bold'
                                                     }
                                                 },
                                                 ticks: {
                                                     color: '#ff6b6b',
                                                     font: {
-                                                        size: window.innerWidth < 768 ? 8 : 11,
+                                                        size: window.innerWidth < 768 ? 9 : 11,
                                                         weight: 'bold'
                                                     }
                                                 },
@@ -313,17 +338,17 @@
                                                 max: 100,
                                                 title: {
                                                     display: true,
-                                                    text: 'Humidity (%)',
+                                                    text: 'Rain Probability (%)',
                                                     color: '#4ecdc4',
                                                     font: {
-                                                        size: window.innerWidth < 768 ? 10 : 13,
+                                                        size: window.innerWidth < 768 ? 11 : 13,
                                                         weight: 'bold'
                                                     }
                                                 },
                                                 ticks: {
                                                     color: '#4ecdc4',
                                                     font: {
-                                                        size: window.innerWidth < 768 ? 8 : 11,
+                                                        size: window.innerWidth < 768 ? 9 : 11,
                                                         weight: 'bold'
                                                     }
                                                 },
@@ -335,7 +360,7 @@
                                             },
                                             y2: {
                                                 type: 'linear',
-                                                display: true, // Enable wind speed axis
+                                                display: window.innerWidth >= 768, // Hide wind speed axis on mobile devices
                                                 position: 'right',
                                                 min: 0,
                                                 title: {
@@ -343,14 +368,14 @@
                                                     text: 'Wind Speed (m/s)',
                                                     color: '#ffc107',
                                                     font: {
-                                                        size: window.innerWidth < 768 ? 9 : 12,
+                                                        size: window.innerWidth < 768 ? 10 : 12,
                                                         weight: 'bold'
                                                     }
                                                 },
                                                 ticks: {
                                                     color: '#ffc107',
                                                     font: {
-                                                        size: window.innerWidth < 768 ? 7 : 10,
+                                                        size: window.innerWidth < 768 ? 8 : 10,
                                                         weight: 'bold'
                                                     }
                                                 },

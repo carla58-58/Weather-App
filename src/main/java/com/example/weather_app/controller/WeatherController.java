@@ -45,6 +45,7 @@ public class WeatherController {
             model.addAttribute("weatherDescription",weatherResponse.getWeather().get(0).getDescription());
             model.addAttribute("temperature",weatherResponse.getMain().getTemp());
             model.addAttribute("humidity",weatherResponse.getMain().getHumidity());
+            model.addAttribute("rainProbability", calculateRainProbability(weatherResponse.getWeather().get(0).getId()));
             model.addAttribute("windSpeed",weatherResponse.getWind().getSpeed());
             String weatherIcon = "wi wi-owm-" + weatherResponse.getWeather().get(0).getId();
             model.addAttribute("weatherIcon", weatherIcon);
@@ -137,6 +138,7 @@ public class WeatherController {
                 todayData.setTemperature(currentWeather.getMain().getTemp());
                 todayData.setDescription(currentWeather.getWeather().get(0).getDescription());
                 todayData.setHumidity(currentWeather.getMain().getHumidity());
+                todayData.setRainProbability(calculateRainProbability(currentWeather.getWeather().get(0).getId()));
                 todayData.setWindSpeed(currentWeather.getWind().getSpeed());
                 todayData.setWeatherIcon("wi wi-owm-" + currentWeather.getWeather().get(0).getId());
                 forecastList.add(todayData);
@@ -181,6 +183,7 @@ public class WeatherController {
                     seventhDayData.setTemperature(lastDay.getTemperature() + (Math.random() * 4 - 2)); // ±2°C variation
                     seventhDayData.setDescription(lastDay.getDescription() + " (est)");
                     seventhDayData.setHumidity(lastDay.getHumidity());
+                    seventhDayData.setRainProbability(lastDay.getRainProbability());
                     seventhDayData.setWindSpeed(lastDay.getWindSpeed());
                     seventhDayData.setWeatherIcon(lastDay.getWeatherIcon());
                     
@@ -199,6 +202,7 @@ public class WeatherController {
         double totalTemp = 0;
         double totalHumidity = 0;
         double totalWindSpeed = 0;
+        int totalRainProbability = 0;
         Map<String, Integer> weatherDescriptions = new HashMap<>();
         Map<Integer, Integer> weatherIds = new HashMap<>();
         
@@ -207,6 +211,10 @@ public class WeatherController {
             totalTemp += item.getMain().getTemp();
             totalHumidity += item.getMain().getHumidity();
             totalWindSpeed += item.getWind().getSpeed();
+            
+            // Calculate rain probability for this item
+            int rainProb = calculateRainProbability(item.getWeather().get(0).getId());
+            totalRainProbability += rainProb;
             
             // Count weather descriptions and IDs
             String description = item.getWeather().get(0).getDescription();
@@ -236,11 +244,45 @@ public class WeatherController {
         forecast.setTemperature(Math.round(totalTemp / dataCount * 10.0) / 10.0); // Round to 1 decimal place
         forecast.setDescription(mostCommonDescription + " (avg)");
         forecast.setHumidity((int) Math.round(totalHumidity / dataCount));
+        forecast.setRainProbability((int) Math.round(totalRainProbability / dataCount));
         forecast.setWindSpeed(Math.round(totalWindSpeed / dataCount * 10.0) / 10.0); // Round to 1 decimal place
         
         String weatherIcon = "wi wi-owm-" + mostCommonWeatherId;
         forecast.setWeatherIcon(weatherIcon);
         
         return forecast;
+    }
+    
+    // Method to calculate rain probability based on OpenWeatherMap weather condition IDs
+    private int calculateRainProbability(int weatherId) {
+        // OpenWeatherMap weather condition IDs and their corresponding rain probabilities
+        if (weatherId >= 200 && weatherId <= 232) {
+            // Thunderstorm group - high rain probability
+            return 85;
+        } else if (weatherId >= 300 && weatherId <= 321) {
+            // Drizzle group - moderate rain probability
+            return 65;
+        } else if (weatherId >= 500 && weatherId <= 531) {
+            // Rain group - high rain probability
+            return 90;
+        } else if (weatherId >= 600 && weatherId <= 622) {
+            // Snow group - precipitation but not rain
+            return 10;
+        } else if (weatherId >= 701 && weatherId <= 781) {
+            // Atmosphere group (mist, fog, etc.) - low rain probability
+            return 25;
+        } else if (weatherId == 800) {
+            // Clear sky - very low rain probability
+            return 5;
+        } else if (weatherId >= 801 && weatherId <= 804) {
+            // Clouds group - moderate rain probability based on cloud coverage
+            if (weatherId == 801) return 15; // few clouds
+            if (weatherId == 802) return 25; // scattered clouds
+            if (weatherId == 803) return 35; // broken clouds
+            if (weatherId == 804) return 45; // overcast clouds
+        }
+        
+        // Default for unknown conditions
+        return 20;
     }
 }

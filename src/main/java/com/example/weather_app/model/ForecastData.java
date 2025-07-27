@@ -6,18 +6,20 @@ public class ForecastData {
     private double temperature;
     private String description;
     private int humidity;
+    private int rainProbability;
     private double windSpeed;
     private String weatherIcon;
     
     public ForecastData() {}
     
     public ForecastData(String date, String dayName, double temperature, String description, 
-                       int humidity, double windSpeed, String weatherIcon) {
+                       int humidity, int rainProbability, double windSpeed, String weatherIcon) {
         this.date = date;
         this.dayName = dayName;
         this.temperature = temperature;
         this.description = description;
         this.humidity = humidity;
+        this.rainProbability = rainProbability;
         this.windSpeed = windSpeed;
         this.weatherIcon = weatherIcon;
     }
@@ -61,6 +63,14 @@ public class ForecastData {
     
     public void setHumidity(int humidity) {
         this.humidity = humidity;
+    }
+    
+    public int getRainProbability() {
+        return rainProbability;
+    }
+    
+    public void setRainProbability(int rainProbability) {
+        this.rainProbability = rainProbability;
     }
     
     public double getWindSpeed() {
